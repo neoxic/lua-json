@@ -1,0 +1,53 @@
+cmake_minimum_required(VERSION 3.0)
+project(lua-json)
+
+set(USE_LUA_VERSION "" CACHE STRING "Build for Lua version 'X.Y' (or 'jit' for LuaJIT).")
+
+if(USE_LUA_VERSION MATCHES "^[0-9]\\.[0-9]$")
+	set(ver ${USE_LUA_VERSION})
+	string(REGEX REPLACE "\\." "" ver_ ${USE_LUA_VERSION})
+	set(lua lua-${ver} lua${ver} lua${ver_})
+elseif(USE_LUA_VERSION MATCHES "^(jit|)$")
+	set(lua lua${USE_LUA_VERSION})
+	set(ver 5.1)
+else()
+	message(FATAL_ERROR "Unrecognized Lua version '${USE_LUA_VERSION}'")
+endif()
+
+find_package(PkgConfig)
+pkg_search_module(LUA REQUIRED ${lua})
+
+if(NOT LUA_FOUND)
+	message(FATAL_ERROR "Lua not found - set USE_LUA_VERSION to match your configuration")
+elseif(USE_LUA_VERSION STREQUAL "")
+	string(REGEX MATCH "^[0-9]\\.[0-9]" USE_LUA_VERSION ${LUA_VERSION})
+	message(STATUS "Using Lua '${USE_LUA_VERSION}', version ${LUA_VERSION} (set USE_LUA_VERSION to override)")
+	set(ver ${USE_LUA_VERSION})
+else()
+	message(STATUS "Using Lua '${USE_LUA_VERSION}', version ${LUA_VERSION}")
+endif()
+
+add_definitions(-Wall -Wextra -Wpedantic -Wundef -Wshadow -Wredundant-decls
+	-Wstrict-prototypes -Wmissing-prototypes -Wno-variadic-macros)
+
+include_directories(${LUA_INCLUDE_DIRS})
+
+file(GLOB srcs src/*.c)
+add_library(json SHARED ${srcs})
+set_target_properties(json PROPERTIES PREFIX "")
+if(APPLE)
+	target_link_libraries(json "-undefined dynamic_lookup")
+	set_target_properties(json PROPERTIES SUFFIX ".so")
+endif()
+
+include(GNUInstallDirs)
+install(TARGETS json DESTINATION ${CMAKE_INSTALL_LIBDIR}/lua/${ver})
+
+enable_testing()
+find_program(LUA_COMMAND NAMES ${lua})
+file(GLOB tests test/test-*.lua)
+foreach(test ${tests})
+	string(REGEX REPLACE "^.*(test-[^/\\]+\\.lua)$" "\\1" name ${test})
+	add_test(${name} ${LUA_COMMAND} ${test})
+	set_tests_properties(${name} PROPERTIES ENVIRONMENT "LUA_CPATH=${CMAKE_BINARY_DIR}/?.so\;\;")
+endforeach()
