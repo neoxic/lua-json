@@ -133,7 +133,7 @@ local json = require 'json'
 
 local function filter(t)
     for k, v in pairs(t) do
-        if type(v) == 'number' and (v ~= v or v == 1/0 or v == -1/0) then
+        if v ~= v or v == 1/0 or v == -1/0 then
             error(("invalid value '%f' at index '%s'"):format(v, k))
         end
     end
@@ -151,6 +151,7 @@ local function check(t)
 end
 
 local t = {
+    str = 'abc',
     val = 1.234,
     nan = 0/0,
     inf = 1/0,
@@ -158,6 +159,7 @@ local t = {
 }
 
 local s = [[{
+    "str": "abc",
     "val": 1.234,
     "nan": nan,
     "inf": inf,
