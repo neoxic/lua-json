@@ -102,14 +102,13 @@ assert(out.arr2.__array == 5) -- Access to the number of items in a sparse array
 -- This is helpful, for example, when objects are exchanged with both trusted and untrusted parties.
 -- Various custom filters/wrappers can also be implemented using this API.
 
-local function construct(t)
-    return setmetatable(t, {
-        __tostring = function (t) return (t.a or '') .. (t.b or '') end,
-        __toA = function (t) return {A = t.a} end, -- [a -> A]
-        __toB = function (t) return {B = t.b} end, -- [b -> B]
-    })
-end
+local mt = {
+    __tostring = function (t) return (t.a or '') .. (t.b or '') end,
+    __toA = function (t) return {A = t.a} end, -- [a -> A]
+    __toB = function (t) return {B = t.b} end, -- [b -> B]
+}
 
+local function construct(t) return setmetatable(t, mt) end
 local function fromA(t) return construct{a = t.A} end -- [A -> a]
 local function fromB(t) return construct{b = t.B} end -- [B -> b]
 
@@ -132,16 +131,24 @@ these values:
 ```Lua
 local json = require 'json'
 
-local function check(t)
+local function filter(t)
     for k, v in pairs(t) do
         if type(v) == 'number' and (v ~= v or v == 1/0 or v == -1/0) then
             error(("invalid value '%f' at index '%s'"):format(v, k))
         end
     end
-    return setmetatable(t, nil)
+    return t
 end
 
-local mt = {__toJSON = check}
+local mt = {
+    __toJSON = function (t)
+        return setmetatable(filter(t), nil)
+    end,
+}
+
+local function check(t)
+    return setmetatable(t, mt)
+end
 
 local t = {
     val = 1.234,
@@ -158,10 +165,10 @@ local s = [[{
 }]]
 
 -- Strict encoding
-print(json.encode(setmetatable(t, mt)))
+print(json.encode(check(t)))
 
 -- Strict decoding
-print(json.decode(s, nil, check))
+print(json.decode(s, nil, filter))
 ```
 
 
