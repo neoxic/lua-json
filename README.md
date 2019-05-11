@@ -108,11 +108,11 @@ local mt = {
     __toB = function (t) return {B = t.b} end, -- [b -> B]
 }
 
-local function construct(t) return setmetatable(t, mt) end
-local function fromA(t) return construct{a = t.A} end -- [A -> a]
-local function fromB(t) return construct{b = t.B} end -- [B -> b]
+local function new(t) return setmetatable(t, mt) end
+local function fromA(t) return new{a = t.A} end -- [A -> a]
+local function fromB(t) return new{b = t.B} end -- [B -> b]
 
-local obj = construct{a = 'a', b = 'b'}
+local obj = new{a = 'a', b = 'b'}
 assert(tostring(obj) == 'ab')
 assert(tostring(encode_decode(obj, '__toA', fromA)) == 'a')
 assert(tostring(encode_decode(obj, '__toB', fromB)) == 'b')
