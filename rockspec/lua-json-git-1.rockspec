@@ -5,6 +5,13 @@ source = {
 }
 description = {
 	summary = 'JSON encoding/decoding library for Lua',
+	detailed = [[
+		lua-json provides fast JSON encoding/decoding routines for Lua:
+		- Support for inline data transformation/filtering via metamethods/handlers.
+		- Properly protected against memory allocation errors.
+		- No external dependencies.
+		- Written in C.
+	]],
 	license = 'MIT',
 	homepage = 'https://github.com/neoxic/lua-json',
 	maintainer = 'Arseny Vakhrushev <arseny.vakhrushev@gmail.com>',

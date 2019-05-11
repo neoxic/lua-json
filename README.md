@@ -1,7 +1,12 @@
 JSON encoding/decoding library for Lua
 ======================================
 
-[lua-json] provides the following API:
+[lua-json] provides fast JSON encoding/decoding routines for Lua:
+- Support for inline data transformation/filtering via metamethods/handlers.
+- Properly protected against memory allocation errors.
+- No external dependencies.
+- Written in C.
+
 
 ### json.encode(value, [event])
 Returns a text string containing a JSON representation of `value`. Optional `event` may be used
@@ -115,12 +120,11 @@ assert(tostring(encode_decode(obj, '__toB', fromB)) == 'b')
 ```
 
 
-Extended JSON
--------------
+Non-standard numeric values
+---------------------------
 
-[lua-json] accepts non-standard numeric values `[-]nan`, `[-]NaN`, `[-]inf`, `[-]Infinity` when encoding
-or decoding (if supported by the system). It also recognizes numbers prefixed with `0x` as hexadecimal
-when decoding.
+[lua-json] supports the following values in JSON: `[-]nan`, `[-]NaN`, `[-]inf`, `[-]Infinity`.
+It also recognizes numbers prefixed with `0x` as hexadecimal.
 
 If strictly compliant JSON generation is preferred, the following technique may be used to filter out
 these values:
@@ -140,14 +144,14 @@ end
 local mt = {__toJSON = check}
 
 local t = {
-    good = 1.234,
+    val = 1.234,
     nan = 0/0,
     inf = 1/0,
     ninf = -1/0,
 }
 
 local s = [[{
-    "good": 1.234,
+    "val": 1.234,
     "nan": nan,
     "inf": inf,
     "ninf": -inf
