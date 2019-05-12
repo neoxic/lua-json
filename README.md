@@ -1,11 +1,10 @@
-JSON encoding/decoding library for Lua
-======================================
+JSON encoding/decoding module for Lua
+=====================================
 
 [lua-json] provides fast JSON encoding/decoding routines for Lua:
 - Support for inline data transformation/filtering via metamethods/handlers.
-- Properly protected against memory allocation errors.
+- Written in C with 32/64-bit awareness.
 - No external dependencies.
-- Written in C.
 
 
 ### json.encode(value, [event])
@@ -119,11 +118,11 @@ assert(tostring(encode_decode(obj, '__toB', fromB)) == 'b')
 ```
 
 
-Non-standard numeric values
----------------------------
+Non-standard JSON values
+------------------------
 
-[lua-json] supports the following values in JSON: `[-]nan`, `[-]NaN`, `[-]inf`, `[-]Infinity`.
-It also recognizes numbers prefixed with `0x` as hexadecimal.
+[lua-json] recognizes numbers prefixed with `0x` as hexadecimal. It also supports the following values:
+`[-]nan`, `[-]NaN`, `[-]inf`, `[-]Infinity`.
 
 If strictly compliant JSON generation is preferred, the following technique may be used to filter out
 these values:
@@ -134,7 +133,7 @@ local json = require 'json'
 local function filter(t)
     for k, v in pairs(t) do
         if v ~= v or v == 1/0 or v == -1/0 then
-            error(("invalid value '%f' at index '%s'"):format(v, k))
+            error(("non-standard value '%f' at index '%s'"):format(v, k))
         end
     end
     return t
