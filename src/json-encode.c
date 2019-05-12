@@ -194,7 +194,7 @@ static int encodeValue(lua_State *L, Box *box, int idx, const char *ev, int ridx
 			lua_rawset(L, ridx);
 			lua_getfield(L, idx, "__array");
 			if (lua_toboolean(L, -1)) {
-				if (!isInteger(L, -1, &len)) len = (lua_Integer)lua_rawlen(L, idx);
+				if (!isInteger(L, -1, &len)) len = lua_rawlen(L, idx);
 				if (len < 0) len = 0;
 			}
 			lua_settop(L, top);
