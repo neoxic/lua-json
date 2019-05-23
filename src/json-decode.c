@@ -27,7 +27,10 @@
 #include "json.h"
 
 static size_t decodeWhitespace(const char *buf, size_t pos, size_t size) {
-	while (pos < size && strchr(" \t\n\r", buf[pos])) ++pos;
+	for (; pos < size; ++pos) {
+		unsigned char c = buf[pos];
+		if (c != ' ' && c != '\t' && c != '\n' && c != '\r') break;
+	}
 	return pos;
 }
 
@@ -204,10 +207,10 @@ static size_t decodeLiteral(lua_State *L, const char *buf, size_t pos, size_t si
 	buf += pos;
 	for (len = 0, num = 0, frn = 0; pos + len < size; ++len) {
 		unsigned char c = buf[len];
-		if ((c < '0' || c > '9') && (c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && !strchr(".-+", c)) break;
+		if ((c < '0' || c > '9') && (c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && c != '.' && c != '-' && c != '+') break;
 		if (len == sizeof str - 1) goto error;
 		if (!num && c >= '0' && c <= '9') num = 1;
-		if (!frn && num && strchr(".eE", c)) {
+		if (!frn && num && (c == '.' || c == 'e' || c == 'E')) {
 			frn = 1;
 			if (c == '.') c = localeconv()->decimal_point[0]; /* "Localize" decimal point */
 		}
