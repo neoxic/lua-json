@@ -29,7 +29,7 @@
 #endif
 
 #define MODNAME "lua-json"
-#define VERSION "0.1.0"
+#define VERSION "0.1.1"
 
 #define checkStack(L) luaL_checkstack(L, LUA_MINSTACK, "too many nested values")
 
