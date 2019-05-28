@@ -20,7 +20,6 @@
 ** THE SOFTWARE.
 */
 
-#include <stdarg.h>
 #include <string.h>
 #include <locale.h>
 #include "json.h"
@@ -237,14 +236,12 @@ static int encodeValue(lua_State *L, Box *box, int idx, const char *ev, int ridx
 
 int json__encode(lua_State *L) {
 	Box *box;
-	const char *ev;
 	int nerr = 0;
+	const char *ev = luaL_optstring(L, 2, "__toJSON");
 	luaL_checkany(L, 1);
-	ev = luaL_optstring(L, 2, "__toJSON");
 	lua_settop(L, 2);
 	lua_newtable(L);
-	box = newBox(L);
-	if (!encodeValue(L, box, 1, ev, 3, &nerr)) {
+	if (!encodeValue(L, box = newBox(L), 1, ev, 3, &nerr)) {
 		lua_concat(L, nerr);
 		return luaL_argerror(L, 1, lua_tostring(L, -1));
 	}

@@ -173,6 +173,10 @@ static size_t decodeArray(lua_State *L, const char *buf, size_t pos, size_t size
 done:
 	lua_pushinteger(L, len);
 	lua_setfield(L, -2, "__array");
+	if (lua_isnil(L, hidx)) return pos;
+	lua_pushvalue(L, hidx);
+	lua_insert(L, -2);
+	lua_call(L, 1, 1); /* Transform value */
 	return pos;
 }
 
@@ -181,7 +185,7 @@ static size_t decodeObject(lua_State *L, const char *buf, size_t pos, size_t siz
 	pos = decodeDelimiter(L, buf, pos, size, '{', 0);
 	pos = decodeDelimiter(L, buf, pos, size, '}', &res);
 	lua_newtable(L);
-	if (res) return pos;
+	if (res) goto done;
 	checkStack(L);
 	do {
 		pos = decodeString(L, buf, pos, size);
@@ -191,6 +195,11 @@ static size_t decodeObject(lua_State *L, const char *buf, size_t pos, size_t siz
 		pos = decodeDelimiter(L, buf, pos, size, ',', &res);
 	} while (res);
 	pos = decodeDelimiter(L, buf, pos, size, '}', 0);
+done:
+	if (lua_isnil(L, hidx)) return pos;
+	lua_pushvalue(L, hidx);
+	lua_insert(L, -2);
+	lua_call(L, 1, 1); /* Transform value */
 	return pos;
 }
 
@@ -281,23 +290,14 @@ static size_t decodeValue(lua_State *L, const char *buf, size_t pos, size_t size
 	if (pos >= size) luaL_error(L, "value expected at position %d", pos + 1);
 	switch (buf[pos]) {
 		case '"':
-			pos = decodeString(L, buf, pos, size);
-			break;
+			return decodeString(L, buf, pos, size);
 		case '[':
-			pos = decodeArray(L, buf, pos, size, hidx);
-			break;
+			return decodeArray(L, buf, pos, size, hidx);
 		case '{':
-			pos = decodeObject(L, buf, pos, size, hidx);
-			break;
+			return decodeObject(L, buf, pos, size, hidx);
 		default:
-			pos = decodeLiteral(L, buf, pos, size);
-			break;
+			return decodeLiteral(L, buf, pos, size);
 	}
-	if (!lua_istable(L, -1) || lua_isnil(L, hidx)) return pos;
-	lua_pushvalue(L, hidx);
-	lua_insert(L, -2);
-	lua_call(L, 1, 1); /* Call handler */
-	return pos;
 }
 
 int json__decode(lua_State *L) {
