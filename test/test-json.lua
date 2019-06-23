@@ -142,4 +142,27 @@ end
 -- Compliance test --
 ---------------------
 
--- TODO
+local strs = {
+	'{\t"a"\n:\r1, \t"a"\n:\r2}', -- Whitespace + double key
+	'"\\ud800\\uDC00"', -- UTF-16 surrogate pair
+}
+
+local objs = {
+	{a = 2},
+	'𐀀',
+}
+
+for i = 1, #strs do
+	local str, obj = strs[i], objs[i]
+	local obj_, pos = json.decode(str)
+	assert(compare(obj, obj_))
+	assert(pos == #str + 1)
+end
+
+-- Errors
+assert(not pcall(json.encode, setmetatable({}, {}))) -- Table with metatable
+assert(not pcall(json.encode, setmetatable({}, {__toJSON = function (t) return {t = t} end}))) -- Recursion
+assert(not pcall(json.encode, setmetatable({}, {__toJSON = function (t) t() end}))) -- Run-time error
+assert(not pcall(json.encode, {a = print})) -- Invalid value
+assert(not pcall(json.encode, {[print] = 1})) -- Invalid key
+assert(not pcall(json.decode, '"\\ud800\\uDBFF"')) -- Invalid UTF-16 surrogate
