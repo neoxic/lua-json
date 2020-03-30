@@ -13,7 +13,7 @@ description = {
 	]],
 	license = 'MIT',
 	homepage = 'https://github.com/neoxic/lua-json',
-	maintainer = 'Arseny Vakhrushev <arseny.vakhrushev@gmail.com>',
+	maintainer = 'Arseny Vakhrushev <arseny.vakhrushev@me.com>',
 }
 dependencies = {
 	'lua >= 5.1',
