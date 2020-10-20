@@ -22,14 +22,6 @@
 
 #include "json.h"
 
-#ifdef _WIN32
-#define EXPORT __declspec(dllexport)
-#else
-#define EXPORT __attribute__((visibility("default")))
-#endif
-
-EXPORT int luaopen_json(lua_State *L);
-
 static const luaL_Reg funcs[] = {
 	{"encode", json__encode},
 	{"decode", json__decode},
@@ -38,7 +30,7 @@ static const luaL_Reg funcs[] = {
 
 int luaopen_json(lua_State *L) {
 #if LUA_VERSION_NUM < 502
-	luaL_register(L, lua_tostring(L, 1), funcs);
+	luaL_register(L, "json", funcs);
 #else
 	luaL_newlib(L, funcs);
 #endif

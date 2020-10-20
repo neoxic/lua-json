@@ -24,10 +24,6 @@
 
 #include <lauxlib.h>
 
-#ifndef _WIN32
-#pragma GCC visibility push(hidden)
-#endif
-
 #define MODNAME "lua-json"
 #define VERSION "0.1.3"
 
@@ -35,6 +31,18 @@
 
 #if LUA_VERSION_NUM < 502
 #define lua_rawlen(L, idx) lua_objlen(L, idx)
+#endif
+
+#ifdef _WIN32
+#define EXPORT __declspec(dllexport)
+#else
+#define EXPORT __attribute__((visibility("default")))
+#endif
+
+EXPORT int luaopen_json(lua_State *L);
+
+#ifndef _WIN32
+#pragma GCC visibility push(hidden)
 #endif
 
 int json__encode(lua_State *L);
