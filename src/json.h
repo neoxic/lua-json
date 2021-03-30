@@ -25,7 +25,7 @@
 #include <lauxlib.h>
 
 #define MODNAME "lua-json"
-#define VERSION "0.1.3"
+#define VERSION "1.0.0"
 
 #define checkStack(L) luaL_checkstack(L, LUA_MINSTACK, "too many nested values")
 
