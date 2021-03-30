@@ -145,6 +145,9 @@ static int isInteger(lua_State *L, int idx, lua_Integer *val) {
 static int error(lua_State *L, int *nerr, const char *fmt, ...) {
 	va_list ap;
 	va_start(ap, fmt);
+#if LUA_VERSION_NUM >= 504
+	luaL_checkstack(L, 1, 0);
+#endif
 	lua_pushvfstring(L, fmt, ap);
 	va_end(ap);
 	lua_insert(L, -(++(*nerr)));
